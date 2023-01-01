@@ -6,7 +6,6 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
-
 # everyday needs its own csv file to write and update to
 # and to call data from on open
 
@@ -29,7 +28,7 @@ class MainWindow(QMainWindow):
         date = date[1:11]
         self.date = "Timecard." + date + ".csv"
         print(self.date)
-        self.savepath = "/Users/aniediumoren/Desktop/Overseer/"
+        self.savepath = "/Users/aniediumoren/Desktop/TimecardKeeper/"
         self.path = os.path.join(self.savepath, self.date)
 
         self.table = QTableWidget()
@@ -38,10 +37,10 @@ class MainWindow(QMainWindow):
         i = 0
         for i in range(5):
             self.table.setItem(0,i, QTableWidgetItem("0"))
-
+        self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setHorizontalHeaderLabels(['Task', 'Logged Days', 'Hours', 'Week Total', 'Note'])
-        self.table.resizeColumnsToContents()
-        self.table.resizeRowsToContents()
+        # self.table.resizeColumnsToContents()
+        # self.table.resizeRowsToContents()
         self.table.show()
         
         self.setText = QPushButton('Load CSV Data In')
@@ -56,7 +55,6 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.exportbutton)
         self.layout.addWidget(self.setText)
 
-        
         self.container.setLayout(self.layout)
 
         self.setCentralWidget(self.container)
@@ -82,7 +80,7 @@ class MainWindow(QMainWindow):
         setDateFormat = stringQDate.replace(", ", ".")
         setDateString = setDateFormat[1:11]
         filename = "Timecard." + setDateString + ".csv"
-        savePathHead = "/Users/aniediumoren/Desktop/Overseer/"
+        savePathHead = "/Users/aniediumoren/Desktop/TimecardKeeper/"
         savePath = os.path.join(savePathHead, filename)
         _SAVEPATH = savePath
 
@@ -97,32 +95,36 @@ class MainWindow(QMainWindow):
             setDateFormat = stringQDate.replace(", ", ".")
             setDateString = setDateFormat[1:11]
             filename = "Timecard." + setDateString + ".csv"
-            savePathHead = "/Users/aniediumoren/Desktop/Overseer/"
+            savePathHead = "/Users/aniediumoren/Desktop/TimecardKeeper/"
             savePath = os.path.join(savePathHead, filename)
             _SAVEPATH = savePath
             print(_SAVEPATH)
 
         # imports any saved data
             test = _SAVEPATH
-            if not _SAVEPATH:
-                return
-            with open(test, 'r') as csvfile:
-                reader = csv.reader(csvfile, dialect='excel', lineterminator='\n')
-                itemlist = []
-                for row in reader:
-                    for item in row:
-                        print(item)
-                        itemlist.append(item)
-                print(itemlist)
-                sansheader = int(len(itemlist)/2)
-                print(sansheader)
-                data = itemlist[sansheader::1]
-                itemsToList = []
-                itemsToList.append(data)
-                print(itemsToList)
+            if not os.path.exists(_SAVEPATH):
                 i = 0
-                for i in range(sansheader):
-                    self.table.setItem(0,i, QTableWidgetItem(item))
+                for i in range(5):
+                    self.table.setItem(0,i, QTableWidgetItem("0"))
+                return
+            else:
+                with open(test, 'r') as csvfile:
+                    reader = csv.reader(csvfile, dialect='excel', lineterminator='\n')
+                    itemlist = []
+                    for row in reader:
+                        for item in row:
+                            print(item)
+                            itemlist.append(item)
+                    print(itemlist)
+                    sansheader = int(len(itemlist)/2)
+                    print(sansheader)
+                    data = itemlist[sansheader::1]
+                    itemsToList = []
+                    itemsToList.append(data)
+                    print(itemsToList)
+                    i = 0
+                    for i in range(sansheader):
+                        self.table.setItem(0,i, QTableWidgetItem(item))
 
             #set header
             self.table.setHorizontalHeaderLabels(['Task', 'Logged Days', 'Hours', 'Week Total', 'Note'])
