@@ -19,10 +19,11 @@ class MainWindow(QMainWindow):
         self.calendar = QCalendarWidget(self)
         self.calendar.selectionChanged.connect(self.createDate)
         today = self.calendar.selectedDate()
+        self.selecteddaypreviuos = today
         self.calendar.setMaximumDate(today)
 
-        date = self.calendar.selectedDate()
-        date = QDate.getDate(date)
+        self.date = self.calendar.selectedDate()
+        date = QDate.getDate(self.date)
         date = str(date)
         date = date.replace(", ", ".")
         date = date[1:11]
@@ -37,27 +38,44 @@ class MainWindow(QMainWindow):
         i = 0
         for i in range(5):
             self.table.setItem(0,i, QTableWidgetItem("0"))
+
+        self.table.cellChanged.connect(self.addHours)
         self.table.horizontalHeader().setStretchLastSection(True)
-        self.table.setHorizontalHeaderLabels(['Task', 'Logged Days', 'Hours', 'Week Total', 'Note'])
-        # self.table.resizeColumnsToContents()
-        # self.table.resizeRowsToContents()
+        self.table.setHorizontalHeaderLabels(['Project', 'Task', 'Hours', 'Completed?', 'Note'])
+        self.table.itemChanged.connect(self.addHours)
+
         self.table.show()
         
-        self.setText = QPushButton('Load CSV Data In')
-        self.setText.clicked.connect(self.loadcsvdata)
+        self.loadCSV = QPushButton('Load CSV Data In')
+        self.loadCSV.clicked.connect(self.loadcsvdata)
         self.exportbutton = QPushButton('Export to Excel')
         self.exportbutton.clicked.connect(self.exportAsCSV)
+        self.addRowButton = QPushButton('+')
+        self.addRowButton.setFixedWidth(40)
+        self.addRowButton.clicked.connect(self.addRow)
+        self.removeRowButton = QPushButton('-')
+        self.removeRowButton.clicked.connect(self.removeSelectedRow)
+        self.removeRowButton.setFixedWidth(40)
+        self.hourslabel = QLabel()
+        self.hourslabel.setText("0.0")
+
+        self.horizontallayout = QHBoxLayout()
 
         self.container = QWidget()
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.calendar)
         self.layout.addWidget(self.table)
         self.layout.addWidget(self.exportbutton)
-        self.layout.addWidget(self.setText)
+        self.layout.addWidget(self.loadCSV)
+        self.layout.addLayout(self.horizontallayout)
+        self.horizontallayout.addWidget(self.addRowButton)
+        self.horizontallayout.addWidget(self.removeRowButton)
+        self.horizontallayout.addWidget(self.hourslabel)
 
         self.container.setLayout(self.layout)
 
         self.setCentralWidget(self.container)
+        self.resize(800, 500)
 
     def loadcsvdata(self, test):
         test = _SAVEPATH
@@ -84,6 +102,26 @@ class MainWindow(QMainWindow):
         savePath = os.path.join(savePathHead, filename)
         _SAVEPATH = savePath
 
+    def addHours(self):
+        # doesn't work when adding 
+        hourslist = []
+        rowcount = self.table.rowCount()
+        i = 0
+        for i in range(rowcount):
+            try:
+                print(self.table.item(i, 2).text())
+            except:
+                return   
+            hours = self.table.item(i,2).text()
+            hoursint = float(hours)
+            hourslist.append(hoursint)
+        sumtest = sum(hourslist)
+        sumstr = str(sumtest)
+        self.hourslabel.setText(sumstr)
+
+    def updatelabel(self):
+        self.hourslabel.setText(sumstr)
+
     def createDate(self):
         self.exportAsCSV()
 
@@ -98,7 +136,7 @@ class MainWindow(QMainWindow):
             savePathHead = "/Users/aniediumoren/Desktop/TimecardKeeper/"
             savePath = os.path.join(savePathHead, filename)
             _SAVEPATH = savePath
-            print(_SAVEPATH)
+            self.selecteddaypreviuos = date
 
         # imports any saved data
             test = _SAVEPATH
@@ -115,27 +153,27 @@ class MainWindow(QMainWindow):
                         for item in row:
                             print(item)
                             itemlist.append(item)
-                    print(itemlist)
                     sansheader = int(len(itemlist)/2)
-                    print(sansheader)
                     data = itemlist[sansheader::1]
                     itemsToList = []
                     itemsToList.append(data)
-                    print(itemsToList)
                     i = 0
                     for i in range(sansheader):
                         self.table.setItem(0,i, QTableWidgetItem(item))
-
-            #set header
-            self.table.setHorizontalHeaderLabels(['Task', 'Logged Days', 'Hours', 'Week Total', 'Note'])
+            # set header
+            self.table.setHorizontalHeaderLabels(['Project', 'Task', 'Hours', 'Completed?', 'Note'])
 
     def exportAsCSV(self):
-        # broken doesnt catch selectedDay
-        # catch cancel case
-        # needs mnual self.resavepath
+        date = QDate.getDate(self.selecteddaypreviuos)
+        date = str(date)
+        date = date.replace(", ", ".")
+        date = date[1:11]
+        self.date = "Timecard." + date + ".csv"
+        self.savepath = "/Users/aniediumoren/Desktop/TimecardKeeper/"
+        _SAVEPATH = os.path.join(self.savepath, self.date)
 
-        self.path, ok = QFileDialog.getSaveFileName(
-            self, 'Save CSV', self.path, 'CSV(*.csv)')
+        path, ok = QFileDialog.getSaveFileName(
+            self, 'Save CSV', _SAVEPATH, 'CSV(*.csv)')
         if ok:
             columns = range(self.table.columnCount())
             header = [self.table.horizontalHeaderItem(column).text()
@@ -148,6 +186,23 @@ class MainWindow(QMainWindow):
                     writer.writerow(
                         self.table.item(row, column).text()
                         for column in columns)
+            print(_SAVEPATH + " saved")
+        if not path:
+            print(_SAVEPATH + " not saved")
+            return
+        # catch cancel case
+
+    def addRow(self):
+        rowcount = self.table.rowCount()
+        self.table.insertRow(rowcount)
+
+        i = 0
+        for i in range(5):
+            self.table.setItem(rowcount,i, QTableWidgetItem("0"))
+            print(self.table.item(rowcount,i).text())
+
+    def removeSelectedRow(self):
+        self.table.removeRow(self.table.rowCount())
 
 def run():
     app = QApplication(sys.argv)
