@@ -107,7 +107,7 @@ class MainWindow(QMainWindow):
         date = self.calendar.selectedDate()
         # qdate = QDate.getDate(date)
         # stringQDate = str(qdate)
-        date.toString("dd.MM.yyyy")
+        date.toString("dd.MM.yyy")
         # setDateFormat = stringQDate.replace(", ", ".")
         # setDateString = setDateFormat[1:11]
         setDateString = date[1:11]
@@ -117,7 +117,6 @@ class MainWindow(QMainWindow):
         _SAVEPATH = savePath
 
     def addHours(self):
-        # doesn't work when adding 
         hourslist = []
         rowcount = self.table.rowCount()
         i = 0
@@ -127,8 +126,11 @@ class MainWindow(QMainWindow):
             except:
                 return   
             hours = self.table.item(i,2).text()
-            hoursint = float(hours)
-            hourslist.append(hoursint)
+            if hours.isdigit() == True:
+                hoursint = float(hours)
+                hourslist.append(hoursint)
+            else:
+                return
         sumtest = sum(hourslist)
         sumstr = str(sumtest)
         self.hourslabel.setText(sumstr)
@@ -138,7 +140,7 @@ class MainWindow(QMainWindow):
 
     def createDate(self):
         self.exportAsCSV()
-
+     
         # grabs savepath
         if self.calendar.selectedDate():
             date = self.calendar.selectedDate()
@@ -153,14 +155,22 @@ class MainWindow(QMainWindow):
             savePathHead = "/Users/aniediumoren/Desktop/TimecardKeeper/"
             savePath = os.path.join(savePathHead, filename)
             _SAVEPATH = savePath
+            print(_SAVEPATH)
             self.selecteddaypreviuos = date
+            # reset this varable to use later
+            print(self.selecteddaypreviuos)
 
         # imports any saved data
             test = _SAVEPATH
             if not os.path.exists(_SAVEPATH):
                 i = 0
+                rowcount = self.table.rowCount()
+                for i in range(rowcount):
+                    self.table.removeRow(i)
+                i = 0
                 for i in range(5):
                     self.table.setItem(0,i, QTableWidgetItem("0"))
+
                 return
             else:
                 with open(test, 'r') as csvfile:
@@ -170,13 +180,26 @@ class MainWindow(QMainWindow):
                         for item in row:
                             print(item)
                             itemlist.append(item)
-                    sansheader = int(len(itemlist)/2)
-                    data = itemlist[sansheader::1]
+
+                    # sansheader = int(len(itemlist)/2)
+                    sansheader = itemlist[5:len(itemlist)]
+                    # data = itemlist[sansheader::1]
                     itemsToList = []
-                    itemsToList.append(data)
+                    itemsToList.append(sansheader)
+                    print(itemsToList)
+
+                    rowcount = int(len(sansheader)/5)
+                    columncount = 5
                     i = 0
-                    for i in range(sansheader):
-                        self.table.setItem(0,i, QTableWidgetItem(item))
+                    j = 0
+                    for item in sansheader:
+                        for i in range(rowcount):
+                            for j in range(columncount):
+                                self.table.setItem(i,j, QTableWidgetItem(item))
+
+                    # i = 0
+                    # for i in range(sansheader):
+                    #     self.table.setItem(0,i, QTableWidgetItem(item))
             # set header
             self.table.setHorizontalHeaderLabels(['Project', 'Task', 'Hours', 'Completed?', 'Note'])
 
@@ -198,7 +221,7 @@ class MainWindow(QMainWindow):
             columns = range(self.table.columnCount())
             header = [self.table.horizontalHeaderItem(column).text()
                     for column in columns]
-            with open(self.path, 'w') as csvfile:
+            with open(path, 'w') as csvfile:
                 writer = csv.writer(
                     csvfile, dialect='excel', lineterminator='\n')
                 writer.writerow(header)
