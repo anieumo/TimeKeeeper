@@ -23,9 +23,10 @@ class MainWindow(QMainWindow):
         self.calendar.setMaximumDate(today)
 
         self.date = self.calendar.selectedDate()
-        date = QDate.getDate(self.date)
-        date = str(date)
-        date = date.replace(", ", ".")
+        # date = QDate.getDate(self.date)
+        # date = str(date)
+        date = self.date.toString("dd.MM.yyy")
+        # date = date.replace(", ", ".")
         date = date[1:11]
         self.date = "Timecard." + date + ".csv"
         print(self.date)
@@ -56,8 +57,17 @@ class MainWindow(QMainWindow):
         self.removeRowButton = QPushButton('-')
         self.removeRowButton.clicked.connect(self.removeSelectedRow)
         self.removeRowButton.setFixedWidth(40)
+        self.label = QLabel()
+        self.label.setText("User Daily Total:")
         self.hourslabel = QLabel()
         self.hourslabel.setText("0.0")
+        self.menubar = QMenuBar()
+        refreshAction = QAction("Refresh")
+        refreshAction.triggered.connect(self.refreshQTable)
+        refreshAction.setShortcut('Ctrl+O')
+        fileMenu = self.menubar.addMenu('File')
+        fileMenu.addAction(refreshAction)
+        
 
         self.horizontallayout = QHBoxLayout()
 
@@ -70,7 +80,9 @@ class MainWindow(QMainWindow):
         self.layout.addLayout(self.horizontallayout)
         self.horizontallayout.addWidget(self.addRowButton)
         self.horizontallayout.addWidget(self.removeRowButton)
+        self.horizontallayout.addWidget(self.label)
         self.horizontallayout.addWidget(self.hourslabel)
+        self.horizontallayout.addWidget(self.label)
 
         self.container.setLayout(self.layout)
 
@@ -93,10 +105,12 @@ class MainWindow(QMainWindow):
 
     def resavepath(self):
         date = self.calendar.selectedDate()
-        qdate = QDate.getDate(date)
-        stringQDate = str(qdate)
-        setDateFormat = stringQDate.replace(", ", ".")
-        setDateString = setDateFormat[1:11]
+        # qdate = QDate.getDate(date)
+        # stringQDate = str(qdate)
+        date.toString("dd.MM.yyy")
+        # setDateFormat = stringQDate.replace(", ", ".")
+        # setDateString = setDateFormat[1:11]
+        setDateString = date[1:11]
         filename = "Timecard." + setDateString + ".csv"
         savePathHead = "/Users/aniediumoren/Desktop/TimecardKeeper/"
         savePath = os.path.join(savePathHead, filename)
@@ -128,9 +142,10 @@ class MainWindow(QMainWindow):
         # grabs savepath
         if self.calendar.selectedDate():
             date = self.calendar.selectedDate()
-            qdate = QDate.getDate(date)
-            stringQDate = str(qdate)
-            setDateFormat = stringQDate.replace(", ", ".")
+            # qdate = QDate.getDate(date)
+            # stringQDate = str(qdate)
+            setDateFormat = date.toString("dd.MM.yyy")
+            # setDateFormat = stringQDate.replace(", ", ".")
             setDateString = setDateFormat[1:11]
             filename = "Timecard." + setDateString + ".csv"
             savePathHead = "/Users/aniediumoren/Desktop/TimecardKeeper/"
@@ -164,9 +179,11 @@ class MainWindow(QMainWindow):
             self.table.setHorizontalHeaderLabels(['Project', 'Task', 'Hours', 'Completed?', 'Note'])
 
     def exportAsCSV(self):
-        date = QDate.getDate(self.selecteddaypreviuos)
-        date = str(date)
-        date = date.replace(", ", ".")
+        # print(self.selecteddaypreviuos)
+        # date = QDate.getDate(self.selecteddaypreviuos)
+        # date = str(date)
+        date = self.selecteddaypreviuos.toString("dd.MM.yyyy")
+        # date = date.replace(", ", ".")
         date = date[1:11]
         self.date = "Timecard." + date + ".csv"
         self.savepath = "/Users/aniediumoren/Desktop/TimecardKeeper/"
@@ -203,6 +220,13 @@ class MainWindow(QMainWindow):
 
     def removeSelectedRow(self):
         self.table.removeRow(self.table.rowCount())
+
+    def refreshQTable(self):
+        rowcount = self.table.rowCount()
+        for i in range(5):
+            self.table.setItem(rowcount,i, QTableWidgetItem("0"))
+
+
 
 def run():
     app = QApplication(sys.argv)
