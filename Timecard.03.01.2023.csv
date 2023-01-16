@@ -2,4 +2,3 @@ Project,Task,Hours,Completed?,Note
 Red,Jira Bug,2,no,Tackling Jira Bug that is slowing the pipeline
 Green,Grunt Work,2,yes,Updated Data
 Blue,Development Task,4,yes,Created a tool to deliver data down the pipeline faster
-Green,Development Task,1,no,Created a tool to deliver data down the pipeline faster
