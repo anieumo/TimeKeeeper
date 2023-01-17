@@ -19,6 +19,8 @@ class MainWindow(QMainWindow):
         self.selecteddaypreviuos = today
         self.calendar.setMaximumDate(today)
 
+        self.calendar.selectionChanged.connect(self.changeddate)
+
         self.date = self.calendar.selectedDate()
         date = self.date.toString("dd.MM.yyyy")
         date = date[1:11]
@@ -86,6 +88,14 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.container)
         self.resize(800, 500)
+
+    def changeddate(self):
+        self.tableView.clearSpans()
+        rowcount = self.model.rowCount()
+        print(rowcount)
+        self.model.clear()
+        self.model.setHorizontalHeaderLabels(['Project', 'Task', 'Hours', 'Completed?', 'Note'])
+        self.loadCSVData()
 
     def loadCSVData(self):
         # self.tableView.clearSpans()
@@ -182,8 +192,9 @@ class MainWindow(QMainWindow):
         self.model.removeRow(0)
 
     def removeSelectedRow(self):
-        row = self.tableView.selectRow()
-        self.model.removeRow(row)
+        selection = self.tableView.selectionModel().selectedRows()
+        for index in sorted(selection):
+            self.model.removeRow(index.row())
 
 
 if __name__=='__main__':
